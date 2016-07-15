@@ -5,6 +5,7 @@ import skimage.measure
 import os
 import os.path
 import errno
+import warnings
 
 #---- Configruation parameters below ----
 
@@ -12,15 +13,15 @@ import errno
 #               You can convert them with ImageJ via Image -> Type -> 8-bit
 
 # folder_one: Location of folder with the images of the first channel
-folder_one = r"input_1"
+folder_one = r"C:\Users\Christian Jacob\Documents\GitHub\ColocDots\ColocDots\ColocDots\vg1_mask"
 
 # folder_two: Location of folder with the images of the second channel
-folder_two = r"input_2"
+folder_two = r"C:\Users\Christian Jacob\Documents\GitHub\ColocDots\ColocDots\ColocDots\sh2_mask"
 
 # channel_one: A specific name of the first channel
-channel_one = "ch1"
+channel_one = "vg1"
 # channel_two: A specific name of the second channel
-channel_two = "ch2"
+channel_two = "sh2"
 # Remark:   This tool will infer the filename of the second image by replacing any occurence of the value of
 #           channel_one with channel_two in the filename
 #           
@@ -29,13 +30,13 @@ channel_two = "ch2"
 #           both variables to the same value
 
 # output_folder_one: location where results of the first channel will be saved
-output_folder_one = "output_one"
+output_folder_one = r"C:\Users\Christian Jacob\Documents\GitHub\ColocDots\ColocDots\ColocDots\output_one"
 
 # output_folder_one: location where results of the second channel will be saved
-output_folder_two = r"output_two"
+output_folder_two = r"C:\Users\Christian Jacob\Documents\GitHub\ColocDots\ColocDots\ColocDots\output_two"
 
 # original_extension: the original extensions of your files (e.g. ".png", ".jpg", ".tif", etc.)
-original_extension = ".tif"
+original_extension = ".tiff"
 
 # a new extension, if you want a different type (e.g. ".mask.tif", ".png", etc.). If you save images
 # as non-tif, the image might only be visible in ImageJ due to low contrast.
@@ -44,6 +45,9 @@ new_extension = ".tif"
 # background_level: the value of your background. Will be 0 in most cases. Everything above this value is
 #                   regarded as signal
 background_level = 0
+
+# save_masks_instead_of_images: masks will be saved, if set to true
+save_masks_instead_of_images = True
 
 # ---- End of configuration parameters ----
 
@@ -91,17 +95,29 @@ def colocalize_images(filename_one, filename_two):
     save_file_one = os.path.join(output_folder_one, filename_one.replace(original_extension, new_extension))
     save_file_two = os.path.join(output_folder_two, filename_two.replace(original_extension, new_extension))
 
-    skimage.io.imsave(save_file_one, image_one)
-    skimage.io.imsave(save_file_two, image_two)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        if save_masks_instead_of_images:
+            mask_result_one = np.ones_like(image_one)
+            mask_result_one[np.logical_not(result_one)] = 0
+            mask_result_two = np.ones_like(image_two)
+            mask_result_two[np.logical_not(result_two)] = 0
 
-input_files = os.listdir(folder_one)
+            skimage.io.imsave(save_file_one, mask_result_one)
+            skimage.io.imsave(save_file_two, mask_result_two)
+        else:
+            skimage.io.imsave(save_file_one, image_one)
+            skimage.io.imsave(save_file_two, image_two)
 
-create_dir_if_not_exists(output_folder_one)
-create_dir_if_not_exists(output_folder_two)
+if __name__ == '__main__':
+    input_files = os.listdir(folder_one)
 
-if len(input_files) != len(os.listdir(folder_two)):
-    print("Warning: unequal number of input images. Maybe images are missing?")
+    create_dir_if_not_exists(output_folder_one)
+    create_dir_if_not_exists(output_folder_two)
 
-for file in input_files:
-    file_two = file.replace(channel_one, channel_two)
-    colocalize_images(file, file_two)
+    if len(input_files) != len(os.listdir(folder_two)):
+        print("Warning: unequal number of input images. Maybe images are missing?")
+
+    for file in input_files:
+        file_two = file.replace(channel_one, channel_two)
+        colocalize_images(file, file_two)
