@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>1428c0d2-acb1-49fb-bb3f-6e8710b79994</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>GUI.py</StartupFile>
+    <StartupFile>ColocPuncta.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>

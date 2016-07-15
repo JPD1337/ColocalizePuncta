@@ -223,12 +223,17 @@ class ColocGUI:
             coloc.save_masks_instead_of_images = True
 
             coloc.background_level = 1
+            coloc.statistics_save_folder = output_folder
 
             input_files = os.listdir(folder_one)
+
+            coloc.open_statistic_files()
 
             for file in input_files:
                 file_two = file.replace(distinct_one, distinct_two)
                 coloc.colocalize_images(file, file_two)
+
+            coloc.close_statistic_files()
 
             tkinter.messagebox.showinfo("Info", "Done processing {} images".format(len(input_files)))
 
