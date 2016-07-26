@@ -68,7 +68,7 @@ def create_dir_if_not_exists(dir):
         if exception.errno != errno.EEXIST:
             raise
 
-def _calculate_overlapping_area(threshold_one, threshold_two, mask):
+def _calculate_overlapping_area(threshold_one, threshold_two, mask, filename_ch_1):
     area_channel_one = np.sum(threshold_one)
     area_channel_two = np.sum(threshold_two)
     overlap = np.sum(mask)
@@ -76,12 +76,12 @@ def _calculate_overlapping_area(threshold_one, threshold_two, mask):
     relative_channel_one = overlap/area_channel_one
     relative_channel_two = overlap/area_channel_two
 
-    print(area_channel_one, area_channel_two, overlap, relative_channel_one, relative_channel_two, sep=";", file = _overlapping_area_filehandle)
+    print(filename_ch_1, area_channel_one, area_channel_two, overlap, relative_channel_one, relative_channel_two, sep=";", file = _overlapping_area_filehandle)
 
 def _distance(p0, p1):
     return math.sqrt((p0[0] - p1[0])**2 + (p0[1] - p1[1])**2)
 
-def _calculate_distance_of_overlaying_pictures(labels_one, labels_two, max_label_one):
+def _calculate_distance_of_overlaying_pictures(labels_one, labels_two, max_label_one, filename_ch_1):
     for i in range(1, max_label_one):
         current_label_mask = labels_one == i
         overlapping_labels_two = labels_two[current_label_mask]
@@ -96,7 +96,7 @@ def _calculate_distance_of_overlaying_pictures(labels_one, labels_two, max_label
             com_two = ndimage.center_of_mass(labels_two == id)
 
             distance = _distance(com_one, com_two)
-            print(i, id, distance, sep = ";", file = _distance_com_filehandle)
+            print(filename_ch_1, i, id, distance, sep = ";", file = _distance_com_filehandle)
 
 
 def open_statistic_files():
@@ -106,10 +106,10 @@ def open_statistic_files():
     create_dir_if_not_exists(statistics_save_folder)
 
     _overlapping_area_filehandle = open(os.path.join(statistics_save_folder, "overlapping_areas.csv"),'w')
-    print('Area {0} in px;Area {1} in px;Overlap in px;Relative overlap {0};Relative overlap {1}'.format(channel_one.replace(";", "-"), channel_two.replace(";", "-")), file = _overlapping_area_filehandle)
+    print('File Ch1;Area {0} in px;Area {1} in px;Overlap in px;Relative overlap {0};Relative overlap {1}'.format(channel_one.replace(";", "-"), channel_two.replace(";", "-")), file = _overlapping_area_filehandle)
 
     _distance_com_filehandle = open(os.path.join(statistics_save_folder, "distance_com.csv"), 'w')
-    print('Label 1;Label 2;Distance in px', file = _distance_com_filehandle)
+    print('File Ch1;Label 1;Label 2;Distance in px', file = _distance_com_filehandle)
 
 def close_statistic_files():
     global _overlapping_area_filehandle
@@ -155,8 +155,8 @@ def colocalize_images(filename_one, filename_two):
     save_file_two = os.path.join(output_folder_two, filename_two.replace(original_extension, new_extension))
 
     if statistics_save_folder != None:
-        _calculate_overlapping_area(threshold_one, threshold_two, mask)
-        _calculate_distance_of_overlaying_pictures(labels_one, labels_two, max_label_one)
+        _calculate_overlapping_area(threshold_one, threshold_two, mask, filename_one.replace(";", "-"))
+        _calculate_distance_of_overlaying_pictures(labels_one, labels_two, max_label_one, filename_one.replace(";", "-"))
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
