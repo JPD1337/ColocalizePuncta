@@ -15,15 +15,15 @@ import math
 #               You can convert them with ImageJ via Image -> Type -> 8-bit
 
 # folder_one: Location of folder with the images of the first channel
-folder_one = r"C:\Users\Christian Jacob\Documents\GitHub\ColocDots\ColocDots\ColocDots\vg1_mask"
+folder_one = r"C:\Users\jpdel\Documents\GitHub\ColocalizePuncta\ColocPuncta\input_1"
 
 # folder_two: Location of folder with the images of the second channel
-folder_two = r"C:\Users\Christian Jacob\Documents\GitHub\ColocDots\ColocDots\ColocDots\sh2_mask"
+folder_two = r"C:\Users\jpdel\Documents\GitHub\ColocalizePuncta\ColocPuncta\input_2"
 
 # channel_one: A specific name of the first channel
-channel_one = "vg1"
+channel_one = "ch1"
 # channel_two: A specific name of the second channel
-channel_two = "sh2"
+channel_two = "ch2"
 # Remark:   This tool will infer the filename of the second image by replacing any occurence of the value of
 #           channel_one with channel_two in the filename
 #           
@@ -33,9 +33,11 @@ channel_two = "sh2"
 
 # output_folder_one: location where results of the first channel will be saved
 output_folder_one = r"output_one"
+output_folder_one_not = r"output_one_not"
 
-# output_folder_one: location where results of the second channel will be saved
+# output_folder_two: location where results of the second channel will be saved
 output_folder_two = r"output_two"
+output_folder_two_not = r"output_two_not"
 
 # original_extension: the original extensions of your files (e.g. ".png", ".jpg", ".tif", etc.)
 original_extension = ".tif"
@@ -137,22 +139,29 @@ def colocalize_images(filename_one, filename_two):
     mask = np.logical_and(threshold_one, threshold_two)
 
     labels_one, max_label_one = skimage.measure.label(threshold_one, connectivity = 1, return_num = True)
-    labels_two = skimage.measure.label(threshold_two, connectivity = 1)
+    labels_two, max_label_two = skimage.measure.label(threshold_two, connectivity = 1, return_num = True)
 
     overlaying_one = labels_one[mask]
-    overlaying_two = labels_two[mask]
+    overlaying_two = labels_two[mask]    
 
     ids_one = np.unique(overlaying_one.ravel())
     ids_two = np.unique(overlaying_two.ravel())
 
+    ids_one_not = [x for x in range(1, max_label_one + 1) if x not in ids_one]
+    ids_two_not = [x for x in range(1, max_label_two + 1) if x not in ids_two]
+
     result_one = np.in1d(labels_one.ravel(), ids_one).reshape(image_one.shape)
     result_two = np.in1d(labels_two.ravel(), ids_two).reshape(image_two.shape)
+    result_one_not = np.in1d(labels_one.ravel(), ids_one_not).reshape(image_one.shape)
+    result_two_not = np.in1d(labels_two.ravel(), ids_two_not).reshape(image_two.shape)
 
     image_one[np.logical_not(result_one)] = 0
     image_two[np.logical_not(result_two)] = 0
 
     save_file_one = os.path.join(output_folder_one, filename_one.replace(original_extension, new_extension))
     save_file_two = os.path.join(output_folder_two, filename_two.replace(original_extension, new_extension))
+    save_file_one_not = os.path.join(output_folder_one_not, filename_one.replace(original_extension, new_extension))
+    save_file_two_not = os.path.join(output_folder_two_not, filename_two.replace(original_extension, new_extension))
 
     if statistics_save_folder != None:
         _calculate_overlapping_area(threshold_one, threshold_two, mask, filename_one.replace(";", "-"))
@@ -165,9 +174,15 @@ def colocalize_images(filename_one, filename_two):
             mask_result_one[np.logical_not(result_one)] = 0
             mask_result_two = np.ones_like(image_two)
             mask_result_two[np.logical_not(result_two)] = 0
+            mask_result_one_not = np.ones_like(image_one)
+            mask_result_one_not[np.logical_not(result_one_not)] = 0
+            mask_result_two_not = np.ones_like(image_two)
+            mask_result_two_not[np.logical_not(result_two_not)] = 0
 
             skimage.io.imsave(save_file_one, mask_result_one)
             skimage.io.imsave(save_file_two, mask_result_two)
+            skimage.io.imsave(save_file_one_not, mask_result_one_not)
+            skimage.io.imsave(save_file_two_not, mask_result_two_not)
         else:
             skimage.io.imsave(save_file_one, image_one)
             skimage.io.imsave(save_file_two, image_two)
@@ -178,6 +193,8 @@ if __name__ == '__main__':
 
     create_dir_if_not_exists(output_folder_one)
     create_dir_if_not_exists(output_folder_two)
+    create_dir_if_not_exists(output_folder_one_not)
+    create_dir_if_not_exists(output_folder_two_not)
 
     if len(input_files) != len(os.listdir(folder_two)):
         print("Warning: unequal number of input images. Maybe images are missing?")

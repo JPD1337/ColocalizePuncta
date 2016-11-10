@@ -195,6 +195,8 @@ class ColocGUI:
 
             output_folder_one = os.path.join(output_folder, distinct_one)
             output_folder_two = os.path.join(output_folder, distinct_two)
+            output_folder_one_not = os.path.join(output_folder, distinct_one + "_not")
+            output_folder_two_not = os.path.join(output_folder, distinct_two + "_not")
 
             if os.path.isdir(output_folder_one):
                 if not tkinter.messagebox.askyesno("Warning", "The output directory for the first channel already exists. This can cause files to be overwritten. Continue anyway?"):
@@ -207,6 +209,18 @@ class ColocGUI:
                     return
             else:
                 coloc.create_dir_if_not_exists(output_folder_two)
+
+            if os.path.isdir(output_folder_one_not):
+                if not tkinter.messagebox.askyesno("Warning", "The output directory for the first channel already exists. This can cause files to be overwritten. Continue anyway?"):
+                    return
+            else:
+                coloc.create_dir_if_not_exists(output_folder_one_not)
+
+            if os.path.isdir(output_folder_two_not):
+                if not tkinter.messagebox.askyesno("Warning", "The output directory for the second channel already exists. This can cause files to be overwritten. Continue anyway?"):
+                    return
+            else:
+                coloc.create_dir_if_not_exists(output_folder_two_not)
                 
             coloc.channel_one = distinct_one
             coloc.channel_two = distinct_two
@@ -216,6 +230,8 @@ class ColocGUI:
 
             coloc.output_folder_one = output_folder_one
             coloc.output_folder_two = output_folder_two
+            coloc.output_folder_one_not = output_folder_one_not
+            coloc.output_folder_two_not = output_folder_two_not
 
             coloc.original_extension = original_extension
             coloc.new_extension = new_extension
