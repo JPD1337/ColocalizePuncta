@@ -9,3 +9,5 @@ Subsequently, the distances between the centre of masses of identified pairs is 
 Colocalizing and non-colocalizing selections are separated and saved as new output masks (e.g. A_coloc, A_non-coloc, B_coloc, B_non-coloc). 
 These new masks can also be used as input masks for FindFoci in order to re-analyze colocalizing and non-colocalizing signals separately. 
 Additionally, a GUI is provided for selection of the necessary folders.
+
+[![DOI](https://zenodo.org/badge/63417208.svg)](https://zenodo.org/badge/latestdoi/63417208)
